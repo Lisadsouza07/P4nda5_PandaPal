@@ -1,7 +1,7 @@
 # LoRA Communication Module
 
 from config import (
-    LORA_MOSI_PIN, LORA_MISO_PIN, LORA_CLK_PIN, LORA_NSS_PIN,
+    LORA_MOSI_PIN, LORA_MISO_PIN, LORA_CLK_PIN, LORA_SS_PIN,
     LORA_RESET_PIN, LORA_DIO0_PIN, LORA_FREQUENCY,
     LORA_BANDWIDTH, LORA_SPREADING_FACTOR, LORA_CODING_RATE, LORA_POWER
 )
@@ -13,6 +13,13 @@ class LoRaCommunication:
     def __init__(self):
         """Initialize LoRA module using sx127x driver"""
         try:
+            # Hardware reset sequence
+            reset_pin = Pin(LORA_RESET_PIN, Pin.OUT)
+            reset_pin.value(0)
+            time.sleep(0.01)
+            reset_pin.value(1)
+            time.sleep(0.1)
+            
             # SPI configuration
             self.spi = SPI(
                 1,
@@ -25,11 +32,11 @@ class LoRaCommunication:
                 miso=Pin(LORA_MISO_PIN)
             )
             
-            # Pin mapping for sx127x
+            # Pin mapping for sx127x (must use 'ss' and 'dio_0' as expected by driver)
             pins = {
-                'nss': LORA_NSS_PIN,
+                'ss': LORA_SS_PIN,
                 'reset': LORA_RESET_PIN,
-                'dio0': LORA_DIO0_PIN
+                'dio_0': LORA_DIO0_PIN
             }
             
             # LoRA parameters
@@ -54,6 +61,8 @@ class LoRaCommunication:
         
         except Exception as e:
             print(f"LoRA initialization error: {e}")
+            import traceback
+            traceback.print_exc()
             self.initialized = False
     
     def send(self, data):
