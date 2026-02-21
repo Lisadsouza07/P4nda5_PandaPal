@@ -2,44 +2,58 @@
 
 from config import (
     LORA_MOSI_PIN, LORA_MISO_PIN, LORA_CLK_PIN, LORA_CS_PIN,
-    LORA_RESET_PIN, LORA_IRQ_PIN, LORA_FREQUENCY
+    LORA_RESET_PIN, LORA_IRQ_PIN, LORA_FREQUENCY,
+    LORA_BANDWIDTH, LORA_SPREADING_FACTOR, LORA_CODING_RATE, LORA_POWER
 )
 from machine import SPI, Pin
+from sx127x import SX127x
 import time
 
 class LoRaCommunication:
     def __init__(self):
-        """Initialize LoRA module (using upylora library)"""
+        """Initialize LoRA module using sx127x driver"""
         try:
-            import lora
-            
             # SPI configuration
-            spi = SPI(
+            self.spi = SPI(
                 1,
                 baudrate=10000000,
                 polarity=0,
                 phase=0,
                 bits=8,
-                firstbit=SPI.MSB,
                 sck=Pin(LORA_CLK_PIN),
                 mosi=Pin(LORA_MOSI_PIN),
                 miso=Pin(LORA_MISO_PIN)
             )
             
-            # LoRA initialization
-            self.lora = lora.LoRa(
-                spi,
-                cs=Pin(LORA_CS_PIN),
-                reset=Pin(LORA_RESET_PIN),
-                irq=Pin(LORA_IRQ_PIN),
-                freq=LORA_FREQUENCY,
-                tx_power_level=17,
-                comm_timeout=5000
-            )
+            # Pin mapping for sx127x
+            pins = {
+                'ss': LORA_CS_PIN,
+                'reset': LORA_RESET_PIN,
+                'dio_0': LORA_IRQ_PIN
+            }
             
+            # LoRA parameters
+            parameters = {
+                'frequency': LORA_FREQUENCY,
+                'tx_power_level': LORA_POWER,
+                'signal_bandwidth': LORA_BANDWIDTH,
+                'spreading_factor': LORA_SPREADING_FACTOR,
+                'coding_rate': LORA_CODING_RATE,
+                'preamble_length': 8,
+                'implicit_header': False,
+                'sync_word': 0x12,
+                'enable_CRC': False,
+                'invert_IQ': False,
+            }
+            
+            # Initialize LoRA
+            self.lora = SX127x(self.spi, pins, parameters)
+            self.lora.receive()  # Start in receive mode
             self.initialized = True
-        except ImportError:
-            print("Warning: upylora library not found")
+            print("LoRA initialized successfully")
+        
+        except Exception as e:
+            print(f"LoRA initialization error: {e}")
             self.initialized = False
     
     def send(self, data):
@@ -48,15 +62,20 @@ class LoRaCommunication:
         
         Args:
             data: Bytes to send
+        
+        Returns:
+            True if successful, False otherwise
         """
-        if self.initialized:
-            try:
-                self.lora.send_data(data, True, 10)  # Blocking send with timeout
-                return True
-            except Exception as e:
-                print(f"LoRA send error: {e}")
-                return False
-        return False
+        if not self.initialized:
+            return False
+        
+        try:
+            self.lora.println(data, implicit_header=False)
+            self.lora.receive()  # Return to receive mode after sending
+            return True
+        except Exception as e:
+            print(f"LoRA send error: {e}")
+            return False
     
     def receive(self):
         """
@@ -65,10 +84,16 @@ class LoRaCommunication:
         Returns:
             Received bytes or None if no data
         """
-        if self.initialized:
-            try:
-                if self.lora.received_packet():
-                    return self.lora.read_payload()
-            except Exception as e:
-                print(f"LoRA receive error: {e}")
+        if not self.initialized:
+            return None
+        
+        try:
+            if self.lora.received_packet():
+                payload = self.lora.read_payload()
+                # Resume receiving after reading payload
+                self.lora.receive()
+                return payload
+        except Exception as e:
+            print(f"LoRA receive error: {e}")
+        
         return None
