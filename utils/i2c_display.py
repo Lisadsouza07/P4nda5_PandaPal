@@ -2,7 +2,7 @@
 
 from config import I2C_SDA_PIN, I2C_SCL_PIN, I2C_FREQ, DISPLAY_I2C_ADDR
 from machine import I2C, Pin
-import ssd1306
+import drivers.ssd1306 as ssd1306
 
 class Display:
     def __init__(self):

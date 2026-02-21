@@ -1,11 +1,9 @@
 {
     "python.analysis.typeshedPaths": [
-        "~/.micropico-stubs/micropython-esp32-esp32_generic_s3-stubs==1.24.1.post1",
-        "~/.micropico-stubs/included"
+        "~/.micropico-stubs/micropython-esp32-esp32_generic_s3-stubs==1.24.1.post2"
     ],
     "python.analysis.extraPaths": [
-        "~/.micropico-stubs/micropython-esp32-esp32_generic_s3-stubs==1.24.1.post1",
-        "~/.micropico-stubs/included"
+        "~/.micropico-stubs/micropython-esp32-esp32_generic_s3-stubs==1.24.1.post2"
     ],
     "python.languageServer": "Pylance",
     "python.analysis.typeCheckingMode": "basic",

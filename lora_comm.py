@@ -6,7 +6,7 @@ from config import (
     LORA_BANDWIDTH, LORA_SPREADING_FACTOR, LORA_CODING_RATE, LORA_POWER
 )
 from machine import SPI, Pin
-from sx127x import SX127x
+from drivers.sx127x import SX127x
 import time
 
 class LoRaCommunication:
