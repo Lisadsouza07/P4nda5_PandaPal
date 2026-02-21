@@ -1,5 +1,6 @@
 # P4nda5 Virtual Pet - Main Application
 
+from machine import Pin
 from config import LORA_SYNC_MS, DEBUG
 from pet_state import PetState
 from graphics import GraphicsEngine
@@ -96,10 +97,15 @@ class VirtualPetApp:
 # Entry point
 if __name__ == "__main__":
     # Create app with device ID (0 or 1)
-    print("Press Ctrl+C to stop boot")
+    button = Pin(0, Pin.IN, Pin.PULL_UP)
+    time.sleep(1)
 
-    for i in range(5):
-        time.sleep(1)
+    if button.value() == 0:
+        print("Safe mode: skipping main")
+    else:
+        app = VirtualPetApp(device_id=0)
+        app.run()
+        
 
-    app = VirtualPetApp(device_id=0)
-    app.run()
+
+    

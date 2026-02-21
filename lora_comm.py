@@ -23,7 +23,7 @@ class LoRaCommunication:
             # SPI configuration
             self.spi = SPI(
                 1,
-                baudrate=10000000,
+                baudrate=1000000,
                 polarity=0,
                 phase=0,
                 bits=8,
@@ -61,8 +61,6 @@ class LoRaCommunication:
         
         except Exception as e:
             print(f"LoRA initialization error: {e}")
-            import traceback
-            traceback.print_exc()
             self.initialized = False
     
     def send(self, data):
