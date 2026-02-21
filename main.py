@@ -87,9 +87,6 @@ class VirtualPetApp:
             print("Application interrupted")
         except Exception as e:
             print(f"Error: {e}")
-            if DEBUG:
-                import traceback
-                traceback.print_exc()
         finally:
             self.display.clear()
             print("Application stopped")
