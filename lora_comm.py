@@ -1,8 +1,8 @@
 # LoRA Communication Module
 
 from config import (
-    LORA_MOSI_PIN, LORA_MISO_PIN, LORA_CLK_PIN, LORA_CS_PIN,
-    LORA_RESET_PIN, LORA_IRQ_PIN, LORA_FREQUENCY,
+    LORA_MOSI_PIN, LORA_MISO_PIN, LORA_CLK_PIN, LORA_NSS_PIN,
+    LORA_RESET_PIN, LORA_DIO0_PIN, LORA_FREQUENCY,
     LORA_BANDWIDTH, LORA_SPREADING_FACTOR, LORA_CODING_RATE, LORA_POWER
 )
 from machine import SPI, Pin
@@ -27,9 +27,9 @@ class LoRaCommunication:
             
             # Pin mapping for sx127x
             pins = {
-                'ss': LORA_CS_PIN,
+                'nss': LORA_NSS_PIN,
                 'reset': LORA_RESET_PIN,
-                'dio_0': LORA_IRQ_PIN
+                'dio0': LORA_DIO0_PIN
             }
             
             # LoRA parameters
