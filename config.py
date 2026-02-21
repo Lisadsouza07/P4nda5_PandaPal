@@ -6,12 +6,12 @@ I2C_SCL_PIN = 8
 I2C_FREQ = 400000
 
 # LoRA Module Configuration (SX1278)
-LORA_MOSI_PIN = 10
-LORA_MISO_PIN = 8
-LORA_CLK_PIN = 9
-LORA_SS_PIN = 3  # Slave Select (Chip Select)
-LORA_RESET_PIN = 2
-LORA_DIO0_PIN = 11  # Interrupt pin
+LORA_MOSI_PIN = 7
+LORA_MISO_PIN = 2
+LORA_CLK_PIN = 6
+LORA_SS_PIN = 10  # Slave Select (Chip Select)
+LORA_RESET_PIN = 4
+LORA_DIO0_PIN = 5  # Interrupt pin
 LORA_FREQUENCY = 915000000  # 915 MHz for US, adjust for your region
 LORA_BANDWIDTH = 125000
 LORA_SPREADING_FACTOR = 7
@@ -19,7 +19,7 @@ LORA_CODING_RATE = 5
 LORA_POWER = 17
 
 # Button Configuration
-BUTTON_PIN = 12
+BUTTON_PIN = 0
 BUTTON_DEBOUNCE_MS = 50
 
 # Display Configuration
