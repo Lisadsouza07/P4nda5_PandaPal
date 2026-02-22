@@ -43,16 +43,31 @@ class VirtualPetApp:
         
         # Timing
         self.last_lora_sync = time.time()
+        self.error_start_time = None  # Track when error occurred
+        self.error_duration_ms = 500  # Show error for 500ms
         
         if DEBUG:
             print(f"Device {device_id} initialized successfully")
     
     def on_button_pressed(self):
-        """Handle button press - cycle pet state"""
+        """Handle button press - reduce wireless health, boost contact health"""
         if DEBUG:
             print("Button pressed!")
-        self.pet_state.next_state()
-        self._send_state()
+        
+        # Try to sync wireless
+        success = self.health.on_wireless_sync()
+        
+        if not success:
+            # No signals left - show error state
+            self.pet_state.previous_state = self.pet_state.current_state
+            self.pet_state.is_error = True
+            self.pet_state.is_dirty = True
+            self.error_start_time = time.time()
+            if DEBUG:
+                print("No wireless signals left! Error state displayed.")
+        else:
+            self.error_start_time = None
+            self._send_state()
     
     def _send_state(self):
         """Send current state via LoRA"""
@@ -71,11 +86,23 @@ class VirtualPetApp:
             if DEBUG:
                 print(f"Received: {data.hex()}")
             self.pet_state.parse_sync_packet(data)
-            self.health.on_wireless_sync()
+            success = self.health.on_wireless_sync()  # Removes one signal sprite and boosts contact health
+            
+            if not success:
+                # No signals left - show error state
+                self.pet_state.previous_state = self.pet_state.current_state
+                self.pet_state.is_error = True
+                self.pet_state.is_dirty = True
+                self.error_start_time = time.time()
+                if DEBUG:
+                    print("No wireless signals left! Error state displayed.")
     
     def on_physical_contact(self):
         """Called when physical contact detected via OneWire"""
         self.health.on_physical_contact()
+        self.error_start_time = None  # Clear error state
+        self.pet_state.is_error = False
+        self.pet_state.is_dirty = True
         if DEBUG:
             print("Physical contact detected!")
     
@@ -85,6 +112,18 @@ class VirtualPetApp:
         
         try:
             while self.running:
+                # Check if error display timeout has elapsed
+                if self.error_start_time is not None:
+                    elapsed_ms = (time.time() - self.error_start_time) * 1000
+                    if elapsed_ms >= self.error_duration_ms:
+                        # Revert from error state
+                        self.pet_state.is_error = False
+                        self.pet_state.current_state = self.pet_state.previous_state
+                        self.pet_state.is_dirty = True
+                        self.error_start_time = None
+                        if DEBUG:
+                            print("Error cleared, reverting to previous state")
+                
                 # Check button input
                 self.button.check()
                 
