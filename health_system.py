@@ -27,7 +27,7 @@ class HealthSystem:
             # No signals left, cannot sync
             return False
         
-        self.wireless_health = max(0, self.wireless_health - 33)  # Remove one "signal sprite" (~33%)
+        self.wireless_health = max(0, self.wireless_health - 34)  # Remove one "signal sprite" (~33%)
         self.contact_health = min(100, self.contact_health + 20)  # Boost contact health by 20%
         self.last_wireless_update = time.time()
         self.last_contact_update = time.time()
