@@ -105,15 +105,9 @@ class LoRaCommunication:
                 print(f"RX: Packet detected (IRQ: 0x{irq_flags:02x})")
                 payload = self.lora.read_payload()
                 print(f"RX: Got {len(payload)} bytes")
-                # Clear the RX_DONE interrupt flag (0x40) before resuming rx
+                # Clear the RX_DONE interrupt flag (0x40)
                 self.lora.write_register(0x12, 0x40)
-                # Resume receiving after reading payload
-                self.lora.receive()
                 return payload
-            else:
-                # If no packet, ensure we're back in RX_CONTINUOUS mode
-                # (received_packet() switches to RX_SINGLE if no packet found)
-                self.lora.receive()
         except Exception as e:
             print(f"LoRA receive error: {e}")
         
