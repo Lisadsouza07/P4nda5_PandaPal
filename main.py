@@ -9,7 +9,6 @@ from health_system import HealthSystem
 from lora_comm import LoRaCommunication
 from utils.i2c_display import Display
 from utils.button_handler import ButtonHandler
-from utils.onewire_contact import OneWireContact
 import time
 
 class VirtualPetApp:
@@ -37,10 +36,9 @@ class VirtualPetApp:
         print("Initializing button handler...")
         self.button = ButtonHandler(self.on_button_pressed)
         
-        print("Initializing OneWire contact detection...")
-        self.onewire = OneWireContact(ONEWIRE_PIN)
-        #self.onewire.on_contact(self.on_physical_contact)
-        self.onewire.on_contact(None)
+        print("Initializing contact reset button...")
+        self.contact_button_pin = Pin(ONEWIRE_PIN, Pin.IN, Pin.PULL_DOWN)
+        self.contact_button_pressed = False
         
         # Timing
         self.last_lora_sync = time.time()
@@ -128,8 +126,11 @@ class VirtualPetApp:
                 # Check button input
                 self.button.check()
                 
-                # Check for physical contact
-                self.onewire.check()
+                # Check for contact reset button (GPIO pulled low, pressed = high)
+                contact_pressed = self.contact_button_pin.value() == 1
+                if contact_pressed and not self.contact_button_pressed:
+                    self.on_physical_contact()
+                self.contact_button_pressed = contact_pressed
                 
                 # Update graphics with health system
                 self.graphics.update(self.pet_state, self.health)
