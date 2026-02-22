@@ -108,8 +108,6 @@ class LoRaCommunication:
                 # Clear the RX_DONE interrupt flag (0x40) before resuming rx
                 self.lora.write_register(0x12, 0x40)
                 # Resume receiving after reading payload
-                # Clear the RX_DONE interrupt flag (0x40) before resuming rx
-                self.lora.write_register(0x12, 0x40)
                 self.lora.receive()
                 return payload
             else:
