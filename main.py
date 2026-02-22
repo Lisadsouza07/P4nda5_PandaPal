@@ -43,7 +43,7 @@ class VirtualPetApp:
         # Timing
         self.last_lora_sync = time.time()
         self.error_start_time = None  # Track when error occurred
-        self.error_duration_ms = 500  # Show error for 500ms
+        self.error_duration_ms = 1000  # Show error for 500ms
         
         if DEBUG:
             print(f"Device {device_id} initialized successfully")
