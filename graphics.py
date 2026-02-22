@@ -131,8 +131,8 @@ class GraphicsEngine:
     
     def _draw_heart_icon(self, x, y):
         """Draw wireless/signal indicator icon (8x8) from sprite data"""
-        if "heart_icon" in SPRITE_DATA and SPRITE_DATA["heart_icon"]:
-            icon_bitmap = SPRITE_DATA["heart_icon"][0]
+        if "heart_icon" in SPRITE_DATA and SPRITE_DATA["filled_heart_icon"]:
+            icon_bitmap = SPRITE_DATA["filled_heart_icon"][0]
             self._draw_bitmap(icon_bitmap, x, y)
     
     def _draw_contact_icon(self, x, y):
