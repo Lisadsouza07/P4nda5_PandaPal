@@ -80,18 +80,18 @@ class VirtualPetApp:
     
     def run(self):
         """Main application loop"""
-        print("StaCheck for physical contact
-                self.onewire.check()
-                
-                # Update graphics with health system
-                self.graphics.update(self.pet_state, self.health
+        print("Starting virtual pet application...")
+        
         try:
             while self.running:
                 # Check button input
                 self.button.check()
                 
-                # Update graphics
-                self.graphics.update(self.pet_state)
+                # Check for physical contact
+                self.onewire.check()
+                
+                # Update graphics with health system
+                self.graphics.update(self.pet_state, self.health)
                 
                 # Check LoRA at intervals
                 current_time = time.time()
@@ -121,7 +121,4 @@ if __name__ == "__main__":
     else:
         app = VirtualPetApp(device_id=0)
         app.run()
-        
 
-
-    
