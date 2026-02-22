@@ -14,16 +14,27 @@ class PetState:
     def set_state(self, state_id):
         """Change pet state"""
         if state_id in PET_STATES:
-            self.current_state = state_id
-            self.animation_frame = 0
-            self.is_dirty = True
+            if self.current_state != state_id:
+                self.current_state = state_id
+                self.animation_frame = 0
+                self.is_dirty = True
             return True
         return False
     
-    def next_state(self):
-        """Cycle to next state"""
-        next_state_id = (self.current_state + 1) % len(PET_STATES)
-        self.set_state(next_state_id)
+    def update_state_from_health(self, contact_health):
+        """Update pet state based on contact health percentage"""
+        if contact_health >= 80:
+            new_state = 0  # happy
+        elif contact_health >= 60:
+            new_state = 1  # hungry
+        elif contact_health >= 40:
+            new_state = 2  # sad
+        elif contact_health >= 20:
+            new_state = 3  # sleeping
+        else:
+            new_state = 4  # playful (desperate state)
+        
+        self.set_state(new_state)
     
     def get_state_name(self):
         """Get current state name"""

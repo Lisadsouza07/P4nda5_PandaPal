@@ -21,28 +21,28 @@ class HealthSystem:
         self.contact_timeout = 30.0   # Health fully depletes in 30 seconds without contact
     
     def on_wireless_sync(self):
-        """Called when LoRA packet is received"""
-        self.wireless_health = 100
+        """Called when LoRA packet is received - reduces signal sprites and boosts contact health"""
+        self.wireless_health = max(0, self.wireless_health - 25)  # Remove one "signal sprite" (25%)
+        self.contact_health = min(100, self.contact_health + 20)  # Boost contact health by 20%
         self.last_wireless_update = time.time()
-        if DEBUG:
-            print("Wireless sync! Health reset to 100")
-    
-    def on_physical_contact(self):
-        """Called when OneWire contact detected"""
-        self.contact_health = 100
         self.last_contact_update = time.time()
         if DEBUG:
-            print("Physical contact! Contact health reset to 100")
+            print(f"Wireless sync! Wireless: {self.wireless_health}, Contact: {self.contact_health}")
+    
+    def on_physical_contact(self):
+        """Called when OneWire contact detected - replenishes both bars"""
+        self.wireless_health = 100
+        self.contact_health = 100
+        self.last_wireless_update = time.time()
+        self.last_contact_update = time.time()
+        if DEBUG:
+            print("Physical contact! Both health bars reset to 100")
     
     def update(self):
         """Update health bars based on elapsed time since last update"""
         current_time = time.time()
         
-        # Update wireless health
-        wireless_elapsed = current_time - self.last_wireless_update
-        self.wireless_health = max(0, 100 - (wireless_elapsed / self.wireless_timeout * 100))
-        
-        # Update contact health
+        # Update contact health (depletes over time without physical contact)
         contact_elapsed = current_time - self.last_contact_update
         self.contact_health = max(0, 100 - (contact_elapsed / self.contact_timeout * 100))
     
@@ -54,10 +54,17 @@ class HealthSystem:
         """Return contact health as 0-100"""
         return int(self.contact_health)
     
-    def get_wireless_health_pixels(self, max_height=32):
-        """Convert health to pixel height for bar display"""
-        return int((self.wireless_health / 100.0) * max_height)
+    def get_wireless_signal_sprites(self):
+        """Return number of signal sprites to draw (0-3)"""
+        if self.wireless_health >= 75:
+            return 3
+        elif self.wireless_health >= 50:
+            return 2
+        elif self.wireless_health > 0:
+            return 1
+        else:
+            return 0
     
     def get_contact_health_pixels(self, max_height=32):
-        """Convert health to pixel height for bar display"""
+        """Convert contact health to pixel height for bar display"""
         return int((self.contact_health / 100.0) * max_height)

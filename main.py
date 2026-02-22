@@ -47,10 +47,10 @@ class VirtualPetApp:
             print(f"Device {device_id} initialized successfully")
     
     def on_button_pressed(self):
-        """Handle button press - cycle pet state"""
+        """Handle button press - reduce wireless health, boost contact health"""
         if DEBUG:
             print("Button pressed!")
-        self.pet_state.next_state()
+        self.health.on_wireless_sync()  # Removes one signal sprite and boosts contact health
         self._send_state()
     
     def _send_state(self):
@@ -70,7 +70,7 @@ class VirtualPetApp:
             if DEBUG:
                 print(f"Received: {data.hex()}")
             self.pet_state.parse_sync_packet(data)
-            self.health.on_wireless_sync()
+            self.health.on_wireless_sync()  # Removes one signal sprite and boosts contact health
     
     def on_physical_contact(self):
         """Called when physical contact detected via OneWire"""
