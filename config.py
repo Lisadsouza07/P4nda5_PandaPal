@@ -40,7 +40,7 @@ PET_STATES = {
 }
 
 # Animation frame rate (ms per frame)
-ANIMATION_FRAME_MS = 200
+ANIMATION_FRAME_MS = 50
 
 # LoRA sync interval (ms)
 LORA_SYNC_MS = 1000
