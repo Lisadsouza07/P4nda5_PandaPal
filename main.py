@@ -39,7 +39,8 @@ class VirtualPetApp:
         
         print("Initializing OneWire contact detection...")
         self.onewire = OneWireContact(ONEWIRE_PIN)
-        self.onewire.on_contact(self.on_physical_contact)
+        #self.onewire.on_contact(self.on_physical_contact)
+        self.onewire.on_contact(None)
         
         # Timing
         self.last_lora_sync = time.time()
