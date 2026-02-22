@@ -105,6 +105,8 @@ class LoRaCommunication:
                 print(f"RX: Packet detected (IRQ: 0x{irq_flags:02x})")
                 payload = self.lora.read_payload()
                 print(f"RX: Got {len(payload)} bytes")
+                # Clear the RX_DONE interrupt flag (0x40) before resuming rx
+                self.lora.write_register(0x12, 0x40)
                 # Resume receiving after reading payload
                 self.lora.receive()
                 return payload
