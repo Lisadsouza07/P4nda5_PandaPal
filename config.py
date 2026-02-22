@@ -23,7 +23,7 @@ BUTTON_PIN = 0
 BUTTON_DEBOUNCE_MS = 50
 
 # OneWire Contact Detection (physical touch)
-ONEWIRE_PIN = 13
+ONEWIRE_PIN = 20
 
 # Display Configuration
 DISPLAY_WIDTH = 128

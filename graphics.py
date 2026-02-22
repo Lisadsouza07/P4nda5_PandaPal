@@ -164,19 +164,9 @@ class GraphicsEngine:
     def _draw_error_sprite(self):
         """Draw error sprite (X symbol) in center of display"""
         center_x = DISPLAY_WIDTH // 2
-        center_y = (DISPLAY_HEIGHT - 16) // 2  # Offset for text at bottom
-        size = 16
+        center_y = ((DISPLAY_HEIGHT) // 2) - 25  # Offset for text at bottom
+        size = 100
         
-        # Draw X (two diagonal lines)
-        for i in range(size):
-            # Draw from top-left to bottom-right
-            x1 = center_x - size // 2 + i
-            y1 = center_y - size // 2 + i
-            if 0 <= x1 < DISPLAY_WIDTH and 0 <= y1 < DISPLAY_HEIGHT:
-                self.display.pixel(x1, y1, 1)
-            
-            # Draw from top-right to bottom-left
-            x2 = center_x + size // 2 - i
-            y2 = center_y - size // 2 + i
-            if 0 <= x2 < DISPLAY_WIDTH and 0 <= y2 < DISPLAY_HEIGHT:
-                self.display.pixel(x2, y2, 1)
+        if "irritated" in SPRITE_DATA and SPRITE_DATA["irritated"]:
+            icon_bitmap = SPRITE_DATA["irritated"][0]
+            self._draw_bitmap(icon_bitmap, center_x - size // 2, center_y)

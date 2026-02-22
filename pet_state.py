@@ -41,7 +41,7 @@ class PetState:
     def get_state_name(self):
         """Get current state name"""
         if self.is_error:
-            return "error"
+            return "No More Excuses!"
         return PET_STATES.get(self.current_state, "unknown")
     
     def update_animation(self):
