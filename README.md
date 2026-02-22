@@ -1,4 +1,4 @@
-# P4nda5 - ESP32-C3 Virtual Pet Pair
+# PandaPal - ESP32-C3 Virtual Pet Pair
 
 A dual ESP32-C3 based virtual pet system using LoRA for wireless synchronization.
 
