@@ -32,88 +32,107 @@ class GraphicsEngine:
         # Update health system if provided
         if health_system:
             health_system.update()
+            # Update pet state based on health
+            pet_state.update_state_from_health(health_system.get_contact_health_percent())
         
         # Check if it's time to update animation frame
         if elapsed_ms >= ANIMATION_FRAME_MS:
             pet_state.update_animation()
             self.last_frame_time = current_time
         
-        # Only redraw if state changed
-        if pet_state.is_dirty:
+        # Only redraw if state changed or animation frame changed
+        if pet_state.is_dirty or elapsed_ms >= ANIMATION_FRAME_MS:
             self.draw_frame(pet_state, health_system)
     
     def draw_frame(self, pet_state, health_system=None):
         """Draw current pet state with health bars"""
         self.display.fill(0)  # Clear display
         
-        state_name = pet_state.get_state_name()
-        frame_idx = pet_state.animation_frame
-        
-        # Get sprite for current state and frame
-        sprite_bitmap = self.sprite_manager.get_sprite(state_name, frame_idx)
-        
-        if sprite_bitmap:
-            # Draw sprite centered on display
-            sprite_width = sprite_bitmap.get('width', 32)
-            sprite_height = sprite_bitmap.get('height', 32)
-            x = (DISPLAY_WIDTH - sprite_width) // 2
-            y = (DISPLAY_HEIGHT - sprite_height) // 2
+        if pet_state.is_error:
+            # Draw error sprite (X symbol)
+            self._draw_error_sprite()
+        else:
+            state_name = pet_state.get_state_name()
+            frame_idx = pet_state.animation_frame
             
-            self._draw_bitmap(sprite_bitmap, x, y)
-        
-        # Draw health bars on sides if health_system provided
-        if health_system:
-            self._draw_health_bars(health_system)
+            # Get sprite for current state and frame
+            sprite_bitmap = self.sprite_manager.get_sprite(state_name, frame_idx)
+            
+            if sprite_bitmap:
+                # Draw sprite centered on display
+                sprite_width = sprite_bitmap.get('width', 32)
+                sprite_height = sprite_bitmap.get('height', 32)
+                x = (DISPLAY_WIDTH - sprite_width) // 2
+                y = (DISPLAY_HEIGHT - sprite_height) // 2
+                
+                self._draw_bitmap(sprite_bitmap, x, y)
+            
+            # Draw health indicators on sides if health_system provided
+            if health_system:
+                self._draw_health_indicators(health_system)
         
         # Draw status text at bottom
+        state_name = pet_state.get_state_name()
         self.display.text(state_name.upper(), 0, 56, 1)
         
         self.display.show()
         pet_state.reset_dirty_flag()
     
-    def _draw_health_bars(self, health_system):
+    def _draw_health_indicators(self, health_system):
         """
-        Draw two health bars on left and right sides with indicator sprites
-        Left: Wireless health (LoRA sync)
-        Right: Contact health (physical contact)
+        Draw health indicators:
+        Left: 0-3 signal sprites (wireless health)
+        Right: Contact health bar
         """
+        sprite_size = 8
+        spacing = 2
+        
+        # Left side - Signal sprites (max 3)
+        signal_sprites = health_system.get_wireless_signal_sprites()
+        start_x = 2
+        start_y = 10
+        
+        for i in range(3):  # Draw up to 3 sprite slots
+            # Draw outline for all 3 positions
+            for px in range(sprite_size):
+                self.display.pixel(start_x + px, start_y + i * (sprite_size + spacing), 1)
+                self.display.pixel(start_x + px, start_y + i * (sprite_size + spacing) + sprite_size - 1, 1)
+            for py in range(sprite_size):
+                self.display.pixel(start_x, start_y + i * (sprite_size + spacing) + py, 1)
+                self.display.pixel(start_x + sprite_size - 1, start_y + i * (sprite_size + spacing) + py, 1)
+            
+            # Draw filled signal sprites for active ones
+            if i < signal_sprites:
+                self._draw_heart_icon(start_x + 1, start_y + i * (sprite_size + spacing) + 1)
+        
+        # Right side - Contact health bar
         bar_width = 4
         bar_height = 32
+        bar_x = DISPLAY_WIDTH - bar_width - 2
         bar_y = (DISPLAY_HEIGHT - bar_height) // 2
         
-        # Left side - Wireless health with signal icon
-        left_x = 1
+        # Draw contact icon above bar
+        self._draw_contact_icon(bar_x - 2, bar_y - 8)
         
-        # Draw wireless indicator sprite (simple signal bars pattern)
-        # 8x8 pixel antenna/signal icon
-        self._draw_signal_icon(left_x, bar_y - 8)
+        # Draw health bar outline
+        for px in range(bar_width):
+            self.display.pixel(bar_x + px, bar_y, 1)
+            self.display.pixel(bar_x + px, bar_y + bar_height - 1, 1)
+        for py in range(bar_height):
+            self.display.pixel(bar_x, bar_y + py, 1)
+            self.display.pixel(bar_x + bar_width - 1, bar_y + py, 1)
         
-        # Draw left health bar
-        wireless_pixels = health_system.get_wireless_health_pixels(bar_height)
-        if wireless_pixels > 0:
-            # Draw filled portion
-            for px in range(wireless_pixels):
-                for py in range(bar_width):
-                    self.display.pixel(left_x + py, bar_y + (bar_height - px - 1), 1)
-        
-        # Right side - Contact health with touch icon
-        right_x = DISPLAY_WIDTH - bar_width - 1
-        
-        # Draw contact indicator sprite (simple hand/touch pattern)
-        self._draw_contact_icon(right_x, bar_y - 8)
-        
-        # Draw right health bar
+        # Draw filled portion based on contact health
         contact_pixels = health_system.get_contact_health_pixels(bar_height)
         if contact_pixels > 0:
-            # Draw filled portion
-            for px in range(contact_pixels):
-                for py in range(bar_width):
-                    self.display.pixel(right_x + py, bar_y + (bar_height - px - 1), 1)
+            for px in range(bar_width):
+                for py in range(contact_pixels):
+                    self.display.pixel(bar_x + px, bar_y + (bar_height - py - 1), 1)
     
-    def _draw_signal_icon(self, x, y):
+    def _draw_heart_icon(self, x, y):
         """Draw wireless/signal indicator icon (8x8) from sprite data"""
-        if "signal_icon" in SPRITE_DATA and SPRITE_DATA["signal_icon"]:
-            icon_bitmap = SPRITE_DATA["signal_icon"][0]
+        if "heart_icon" in SPRITE_DATA and SPRITE_DATA["filled_heart_icon"]:
+            icon_bitmap = SPRITE_DATA["filled_heart_icon"][0]
             self._draw_bitmap(icon_bitmap, x, y)
     
     def _draw_contact_icon(self, x, y):
@@ -150,3 +169,22 @@ class GraphicsEngine:
                         if 0 <= px < DISPLAY_WIDTH and 0 <= py < DISPLAY_HEIGHT:
                             self.display.pixel(px, py, 1)
     
+    def _draw_error_sprite(self):
+        """Draw error sprite (X symbol) in center of display"""
+        center_x = DISPLAY_WIDTH // 2
+        center_y = (DISPLAY_HEIGHT - 16) // 2  # Offset for text at bottom
+        size = 16
+        
+        # Draw X (two diagonal lines)
+        for i in range(size):
+            # Draw from top-left to bottom-right
+            x1 = center_x - size // 2 + i
+            y1 = center_y - size // 2 + i
+            if 0 <= x1 < DISPLAY_WIDTH and 0 <= y1 < DISPLAY_HEIGHT:
+                self.display.pixel(x1, y1, 1)
+            
+            # Draw from top-right to bottom-left
+            x2 = center_x + size // 2 - i
+            y2 = center_y - size // 2 + i
+            if 0 <= x2 < DISPLAY_WIDTH and 0 <= y2 < DISPLAY_HEIGHT:
+                self.display.pixel(x2, y2, 1)
