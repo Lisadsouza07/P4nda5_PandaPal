@@ -33,7 +33,7 @@ DISPLAY_I2C_ADDR = 0x3C
 # Pet State Definitions
 PET_STATES = {
     0: "happy",
-    1: "hungry",
+    1: "angry",
     2: "sad",
     3: "sleeping",
     4: "playful"
